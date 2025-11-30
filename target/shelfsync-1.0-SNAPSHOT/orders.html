@@ -69,9 +69,7 @@ async function loadOrders() {
 }
 
 function renderOrders() {
-  let filtered = orders.filter(o =>
-    o.product.toLowerCase().includes(searchProduct)
-  );
+  let filtered = orders.filter(o => o.product.toLowerCase().includes(searchProduct));
 
   let rows = "";
   filtered.forEach(o => {
@@ -84,13 +82,35 @@ function renderOrders() {
         <td>${o.price}</td>
         <td>${o.total_sale}</td>
         <td>${o.date}</td>
-        <td>${o.delivered || '-'}</td>
+        <td id="delivered-${o.id}">${o.delivered || "No"}</td>
+        <td>
+          ${o.delivered === "No" || o.delivered === "" 
+            ? `<button onclick="markDelivered(${o.id})">Mark Delivered</button>` 
+            : "-"}
+        </td>
       </tr>`;
   });
 
   document.getElementById('orders-list-table').innerHTML =
-    rows || "<tr><td colspan='8'>No orders found.</td></tr>";
+    rows || "<tr><td colspan='9'>No orders found.</td></tr>";
 }
+
+// Mark Delivered
+async function markDelivered(id) {
+  const params = new URLSearchParams({ action: "deliver", id });
+  await fetch("orders.jsp?" + params.toString());
+
+  // Update frontend immediately
+  const btn = document.querySelector(`button[onclick='markDelivered(${id})']`);
+  if (btn) btn.remove();
+  const deliveredCell = document.getElementById(`delivered-${id}`);
+  if (deliveredCell) deliveredCell.textContent = "Yes";
+
+  // Optionally reload the orders array
+  loadOrders();
+}
+
+
 
 // Load orders initially
 loadOrders();

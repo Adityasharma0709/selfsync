@@ -42,12 +42,14 @@ boolean first = true;
 while (rs.next()) {
     if (!first) out.print(",");
     first = false;
+
     out.print("{");
     out.print("\"id\":" + rs.getInt("id") + ",");
     out.print("\"product\":\"" + rs.getString("product") + "\",");
     out.print("\"category\":\"" + rs.getString("category") + "\",");
     out.print("\"qty\":" + rs.getInt("qty") + ",");
     out.print("\"price\":" + rs.getDouble("price") + ",");
+    out.print("\"total_sale\":" + rs.getDouble("total_sale") + ",");   // ✅ ADDED
     out.print("\"date\":\"" + rs.getString("date") + "\"");
     out.print("}");
 }
