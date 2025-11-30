@@ -10,29 +10,6 @@ Connection con = DriverManager.getConnection(
 
 String action = request.getParameter("action");
 
-if ("add".equals(action)) {
-    String product = request.getParameter("product");
-    String category = request.getParameter("category");
-    String qty = request.getParameter("qty");
-    String price = request.getParameter("total");
-    String date = request.getParameter("date");
-
-    PreparedStatement ps = con.prepareStatement(
-        "INSERT INTO orders(product, category, qty, price, date) VALUES (?, ?, ?, ?, ?)"
-    );
-    ps.setString(1, product);
-    ps.setString(2, category);
-    ps.setInt(3, Integer.parseInt(qty));
-    ps.setDouble(4, Double.parseDouble(price));
-    ps.setString(5, date);
-    ps.executeUpdate();
-    ps.close();
-
-    out.print("{\"status\":\"success\"}");
-    con.close();
-    return;
-}
-
 // Fetch all orders as JSON
 PreparedStatement ps = con.prepareStatement("SELECT * FROM sales ORDER BY id DESC");
 ResultSet rs = ps.executeQuery();
