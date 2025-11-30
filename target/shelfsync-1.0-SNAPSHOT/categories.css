@@ -1,0 +1,56 @@
+.categories-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    .categories-table th, .categories-table td {
+      border: 1px solid #eee;
+      padding: 8px;
+      text-align: left;
+    }
+    .delete-btn {
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background: #c0392b;
+    }
+    .add-category-form input {
+      padding: 7px 10px;
+      margin-right: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-top: 4px;
+    }
+    .add-category-btn {
+      background: #fa8655;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 7px 14px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .add-category-btn:hover {
+      background: #cf7142;
+    }
+    .info-cards {
+      margin-bottom: 23px;
+    }
+    .success-message, .error-message {
+      font-size: 1em;
+      margin-bottom: 11px;
+      border-radius: 6px;
+      padding: 8px 12px;
+      width: fit-content;
+    }
+    .success-message {
+      background: #c1e6cf; color: #155724;
+    }
+    .error-message {
+      background: #fff3cd; color: #856404;
+    }

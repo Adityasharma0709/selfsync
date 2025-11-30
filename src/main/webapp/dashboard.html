@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <style>
+      body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #F8F8F8;
+  color: #333;
+}
+.sidebar {
+  width: 220px;
+  background: #3786c7;
+  color: #fff;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  padding-top: 20px;
+  z-index: 1;
+}
+.logo {
+  font-weight: bold;
+  font-size: 1.2em;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+}
+.sidebar ul li {
+  padding: 12px 25px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar ul li:hover {
+  background: #2c6da1;
+}
+.main-content {
+  margin-left: 220px;
+  padding: 30px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1em;
+  margin-bottom: 30px;
+}
+.header .admin-user {
+  background: #FFE066;
+  color: #333;
+  padding: 4px 18px;
+  border-radius: 15px;
+}
+.info-cards {
+  display: flex;
+  gap: 25px;
+  margin-bottom: 28px;
+}
+.card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 8px;
+  padding: 22px;
+  box-shadow: 0 2px 6px #ccc;
+}
+.card .icon {
+  font-size: 2.6em;
+  margin-right: 16px;
+}
+.card.users { background: #c1e6cf; }
+.card.categories { background: #fa8655; color: #fff; }
+.card.products { background: #8ddcf7; color: #333; }
+.card.sales { background: #ffe066; color: #333; }
+.dashboard-widgets {
+  display: flex;
+  gap: 28px;
+}
+.widget {
+  background: #fff;
+  flex: 1;
+  border-radius: 8px;
+  padding: 18px;
+  box-shadow: 0 2px 6px #ccc;
+  min-width: 270px;
+}
+.widget h3 {
+  font-size: 1em;
+  font-weight: bold;
+  margin-bottom: 9px;
+}
+.widget table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.widget th, .widget td {
+  border: 1px solid #eee;
+  padding: 8px;
+  text-align: left;
+  font-size: 0.95em;
+}
+#recent-products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+.recent-product-item {
+  display: flex;
+  align-items: center;
+  background: #f6f6f6;
+  padding: 7px 12px;
+  border-radius: 6px;
+}
+
+.recent-product-item img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  margin-right: 10px;
+  border-radius: 3px;
+  border: 1px solid #ddd;
+}
+.recent-product-item .title {
+  font-weight: 500;
+}
+
+.recent-product-item .badge {
+  background: #ffe066;
+  color: #333;
+  font-size: 0.9em;
+  border-radius: 12px;
+  padding: 2px 7px;
+  margin-left: 8px;
+}
+.logout-btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: #e0e0e0;
+}
+.sidebar ul li a {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  width: 100%;
+  height: 100%;
+}
+.sidebar ul li a:hover {
+  background: #2c6da1;
+}
+</style>
+</head>
+
+<body>
+  <div class="sidebar">
+    <div class="logo">selfsync</div>
+    <ul>
+  <li><a href="dashboard.html">Dashboard</a></li>
+  <li><a href="users.html">User Management</a></li>
+  <li><a href="categories.html">Categories</a></li>
+  <li><a href="products.html">Products</a></li>
+  <li><a href="inventory.html">Inventory</a></li>
+  <li><a href="orders.html">Orders</a></li>
+  <li><a href="sales.html">Sales</a></li>
+</ul>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <span id="current-date"></span>
+      <button class="logout-btn" onclick="window.location.href='index.html'">Logout</button>
+    </div>
+
+    <div class="info-cards">
+  <div class="card categories" onclick="window.location.href='categories.html'" style="cursor:pointer;">
+    <div class="icon">&#9776;</div>
+    <div class="text">
+      <div class="number" id="categories-count">0</div>
+      <div>Categories</div>
+    </div>
+  </div>
+
+  <div class="card users" onclick="window.location.href='user-management.html'" style="cursor:pointer;">
+    <div class="icon">&#128100;</div>
+    <div class="text">
+      <div class="number" id="users-count">0</div>
+      <div>Users</div>
+    </div>
+  </div>
+
+  <div class="card products" onclick="window.location.href='products.html'" style="cursor:pointer;">
+    <div class="icon">&#128722;</div>
+    <div class="text">
+      <div class="number" id="products-count">0</div>
+      <div>Products</div>
+    </div>
+  </div>
+  
+  <div class="card sales" onclick="window.location.href='sales.html'" style="cursor:pointer;">
+    <div class="icon">&#128181;</div> 
+    <div class="text">
+      <div class="number" id="sales-count">0</div>
+      <div>Sales</div>
+    </div>
+</div>
+</div>
+
+    <div class="dashboard-widgets">
+      <div class="widget highest-sales">
+        <h3>HIGHEST SALE PRODUCTS</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Total Sold</th>
+              <th>Total Quantity</th>
+            </tr>
+          </thead>
+          <tbody id="highest-sales-table">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="widget latest-sales">
+        <h3>LATEST SALES</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Product Name</th>
+              <th>Date</th>
+              <th>Total Sale</th>
+            </tr>
+          </thead>
+          <tbody id="latest-sales-table">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="widget recently-added">
+        <h3>RECENTLY ADDED PRODUCTS</h3>
+        <div id="recent-products-list">
+          + </div>
+      </div>
+    </div>
+  </div>
+
+    <script>
+        document.getElementById('current-date').textContent =
+  new Date().toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+
+const users = [
+  { username: 'ayush', password: 'ayush@123' },
+  { username: 'ravi', password: 'ravi@123' },
+  { username: 'megha', password: 'megha@123' }
+];
+const categories = [
+  'Food', 'Drinks', 'Nuts', 'Oil', 'Dairy', 'Fruits', 'Vegetables', 'Spices', 'Grains', 'Snacks'
+];
+
+const products = [
+  { name: 'Aashirvaad Shudh Chakki Atta (10kg)', category: 'Grains', price: 550, unit: 'packet' },
+  { name: 'Amul Gold Full Cream Milk (1L)', category: 'Dairy', price: 70, unit: 'packet' },
+  { name: 'Fortune Sunlite Sunflower Oil (5L)', category: 'Oil', price: 725, unit: 'packet' },
+  { name: 'Tata Salt (1kg)', category: 'Spices', price: 28, unit: 'kg' },
+  { name: 'Maggi 2-Minute Noodles (Family Pack)', category: 'Snacks', price: 120, unit: 'packet' },
+  { name: 'Onions (1kg)', category: 'Vegetables', price: 45, unit: 'kg' },
+  { name: 'Parle-G Gold Biscuits (1kg)', category: 'Snacks', price: 140, unit: 'kg' }
+];
+
+
+const sales = [
+  { product: 'Amul Gold Full Cream Milk (1L)', date: '2025-10-28', totalSale: '₹70.00' },
+  { product: 'Onions (1kg)', date: '2025-10-28', totalSale: '₹45.00' },
+  { product: 'Aashirvaad Shudh Chakki Atta (10kg)', date: '2025-10-28', totalSale: '₹550.00' },
+  { product: 'Parle-G Gold Biscuits (1kg)', date: '2025-10-27', totalSale: '₹140.00' },
+  { product: 'Tata Salt (1kg)', date: '2025-10-27', totalSale: '₹28.00' }
+];
+document.getElementById('users-count').textContent = users.length;
+document.getElementById('categories-count').textContent = categories.length;
+document.getElementById('products-count').textContent = products.length;
+document.getElementById('sales-count').textContent = sales.length;
+
+const highestSaleProducts = [
+  { title: 'Aashirvaad Shudh Chakki Atta (10kg)', totalSold: 150, totalQuantity: 200 },
+  { title: 'Amul Gold Full Cream Milk (1L)', totalSold: 122, totalQuantity: 150 },
+  { title: 'Fortune Sunlite Sunflower Oil (5L)', totalSold: 90, totalQuantity: 100 },
+  { title: 'Tata Salt (1kg)', totalSold: 85, totalQuantity: 300 },
+  { title: 'Maggi 2-Minute Noodles (Family Pack)', totalSold: 78, totalQuantity: 120 },
+];
+const latestSales = [
+  { product: 'Amul Gold Full Cream Milk (1L)', date: '2025-10-28', totalSale: '₹70.00' },
+  { product: 'Onions (1kg)', date: '2025-10-28', totalSale: '₹45.00' },
+  { product: 'Aashirvaad Shudh Chakki Atta (10kg)', date: '2025-10-28', totalSale: '₹550.00' },
+  { product: 'Parle-G Gold Biscuits (1kg)', date: '2025-10-27', totalSale: '₹140.00' },
+  { product: 'Tata Salt (1kg)', date: '2025-10-27', totalSale: '₹28.00' },
+];
+
+const recentlyAddedProducts = [
+  {
+    name: 'Lays India\'s Magic Masala (50g)',
+    category: 'Snacks',
+    price: '₹20'
+  },
+  {
+    name: 'Tata Tea Gold (1kg)',
+    category: 'Beverages',
+    price: '₹710'
+  },
+  {
+    name: 'Amul Butter - Pasteurised (500g)',
+    category: 'Dairy',
+    price: '₹275'
+  }
+];
+document.getElementById('highest-sales-table').innerHTML =
+  highestSaleProducts.map(product =>
+    `<tr>
+      <td>${product.title}</td>
+      <td>${product.totalSold}</td>
+      <td>${product.totalQuantity}</td>
+    </tr>`).join('');
+
+document.getElementById('latest-sales-table').innerHTML =
+  latestSales.map((sale, idx) =>
+    `<tr>
+      <td>${idx + 1}</td>
+      <td>${sale.product}</td>
+      <td>${sale.date}</td>
+      <td>${sale.totalSale}</td>
+    </tr>`).join('');
+
+document.getElementById('recent-products-list').innerHTML =
+  recentlyAddedProducts.map(prod =>
+    `<div class="recent-product-item">
+      <span class="title">${prod.name}</span>
+      <span class="badge">${prod.price}</span>
+    </div>`).join('');
+
+    </script>
+</body>
+
+</html>

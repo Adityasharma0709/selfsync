@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Categories</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="categories.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">SelfSync</div>
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="users.html">User Management</a></li>
+      <li><a href="categories.html" style="font-weight:bold;">Categories</a></li>
+      <li><a href="products.html">Products</a></li>
+      <li><a href="inventory.html">Inventory</a></li>
+      <li><a href="orders.html">Orders</a></li>
+      <li><a href="sales.html">Sales</a></li>
+    </ul>
+  </div>
+  <div class="main-content">
+    <div class="header">
+      <span>Categories</span>
+      <button class="logout-btn" onclick="window.location.href='index.html'">Logout</button>
+    </div>
+    <div class="info-cards">
+      <div class="card categories">
+        <div class="icon">&#9776;</div>
+        <div class="text">
+          <div class="number" id="categories-count">0</div>
+          <div>Categories</div>
+        </div>
+      </div>
+    </div>
+    <div class="widget">
+      <h3>Categories List</h3>
+      <div id="msg"></div>
+      <table class="categories-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Category Name</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="categories-list-table"></tbody>
+      </table>
+      <h4>Add New Category</h4>
+      <form class="add-category-form" id="addCategoryForm" autocomplete="off" onsubmit="return false;">
+        <input type="text" id="newCategory" placeholder="Category Name" required>
+        <button class="add-category-btn" id="addCategoryBtn">Add Category</button>
+      </form>
+    </div>
+  </div>
+  <script>
+async function loadCategories() {
+  const response = await fetch("categories.jsp");
+  const data = await response.json();
+
+  categories = data;
+  renderCategories();
+}
+
+async function deleteCategory(id) {
+  await fetch(`categories.jsp?action=delete&id=${id}`);
+  loadCategories();
+}
+
+async function addCategory() {
+  const name = document.getElementById("newCategory").value.trim();
+  if (!name) return;
+
+  await fetch(`categories.jsp?action=add&name=${name}`);
+  document.getElementById("addCategoryForm").reset();
+  loadCategories();
+}
+
+function renderCategories() {
+  document.getElementById("categories-count").textContent = categories.length;
+
+  let tbl = "";
+  categories.forEach((cat, i) => {
+    tbl += `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${cat.name}</td>
+        <td>
+          <button class="delete-btn" onclick="deleteCategory(${cat.id})">Delete</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("categories-list-table").innerHTML =
+    tbl || `<tr><td colspan="3">No categories found.</td></tr>`;
+}
+
+document.getElementById("addCategoryBtn").onclick = addCategory;
+
+loadCategories();
+</script>
+
+</body>
+</html>

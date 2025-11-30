@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Products</title>
+        <link rel="stylesheet" href="products.css">
+        <link rel="stylesheet" href="dashboard.css">
+    </head>
+
+    <body>
+        <div class="sidebar">
+            <div class="logo">selfsync</div>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="users.html">User Management</a></li>
+                <li><a href="categories.html">Categories</a></li>
+                <li><a href="products.html" style="font-weight:bold;">Products</a></li>
+                <li><a href="inventory.html">Inventory</a></li>
+                <li><a href="orders.html">Orders</a></li>
+                <li><a href="sales.html">Sales</a></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <span>Products</span>
+                <button class="logout-btn" onclick="window.location.href = 'index.html'">Logout</button>
+            </div>
+            <div class="info-cards">
+                <div class="card products">
+                    <div class="icon">&#128722;</div>
+                    <div class="text">
+                        <div class="number" id="products-count">0</div>
+                        <div>Products</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget">
+                <h3>Product List</h3>
+
+                <div class="filters-row">
+                    <input type="text" id="searchBox" placeholder="Search by product name...">
+                    <select id="categoryFilter">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+
+                <div id="msg"></div>
+
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Price (₹)</th>
+                            <th>Unit</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-list-table"></tbody>
+                </table>
+
+                <h4>Add New Product</h4>
+
+                <form class="add-product-form" id="addProductForm" autocomplete="off" onsubmit="return false;">
+                    <input type="text" id="newProductName" placeholder="Product Name" required>
+                    <select id="newProductCategory" required></select>
+                    <input type="number" id="newProductPrice" placeholder="Price" min="0" step="0.01" required>
+                    <select id="newProductUnit" required>
+                        <option value="kg">per kg</option>
+                        <option value="packet">per packet</option>
+                    </select>
+
+                    <button class="add-product-btn" id="addProductBtn">Add Product</button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            let categories = [];
+            let products = [];
+
+            async function loadData() {
+                const res = await fetch("products.jsp");
+                const text = await res.text();
+
+                console.log("Response from server:", text); // DEBUG
+
+                const data = JSON.parse(text);
+
+                if (data.error) {
+                    console.error("Server Error:", data.error);
+                    showMsg("Server error: " + data.error, false);
+                    return;
+                }
+
+                categories = data.categories;
+                products = data.products;
+
+                renderCategoryDropdown('categoryFilter', true);
+                renderCategoryDropdown('newProductCategory', false);
+                renderProducts();
+            }
+
+            function renderCategoryDropdown(dropdownId, includeAll) {
+                let categoryOptions = includeAll ? `<option value="">All Categories</option>` : '';
+                categoryOptions += categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+                document.getElementById(dropdownId).innerHTML = categoryOptions;
+            }
+
+            let searchTerm = '';
+            let selectedCategory = '';
+
+            document.getElementById('searchBox').oninput = function () {
+                searchTerm = this.value.trim().toLowerCase();
+                renderProducts();
+            };
+
+            document.getElementById('categoryFilter').onchange = function () {
+                selectedCategory = this.value;
+                renderProducts();
+            };
+
+            function renderProducts() {
+                let filtered = products.filter(prod =>
+                    prod.name.toLowerCase().includes(searchTerm) &&
+                            (!selectedCategory || prod.category === selectedCategory)
+                );
+
+                document.getElementById('products-count').textContent = filtered.length;
+
+                let tbl = filtered.map((prod, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td>${prod.name}</td>
+              <td>${prod.category}</td>
+              <td>${prod.price}</td>
+              <td>per ${prod.unit}</td>
+              <td><button class="delete-btn" onclick="deleteProduct(${prod.id})">Delete</button></td>
+            </tr>
+        `).join("");
+
+                document.getElementById('products-list-table').innerHTML =
+                        tbl || '<tr><td colspan="6">No products found.</td></tr>';
+            }
+
+            function showMsg(txt, isSuccess) {
+                const el = document.getElementById('msg');
+                el.textContent = txt;
+                el.className = isSuccess ? 'success-message' : 'error-message';
+                setTimeout(() => {
+                    el.textContent = '';
+                    el.className = '';
+                }, 2000);
+            }
+            async function deleteProduct(id) {
+                await fetch(`products.jsp?action=delete&id=${id}`);
+                await loadData();
+                showMsg("Product deleted!", true);
+            }
+
+            document.getElementById("addProductBtn").onclick = async () => {
+                const name = newProductName.value.trim();
+                const category = newProductCategory.value;
+                const price = newProductPrice.value;
+                const unit = newProductUnit.value;
+
+                if (!name || !category || !price || !unit) {
+                    showMsg("Please fill all fields!", false);
+                    return;
+                }
+
+                // call the same products.jsp with action=add
+                const res = await fetch(`products.jsp?action=add&name=${name}&category=${category}&price=${price}&unit=${unit}`);
+
+                await loadData(); // reload table
+                showMsg("Product added successfully!", true);
+                addProductForm.reset();
+            };
+
+
+
+            loadData();
+
+        </script>
+    </body>
+
+</html>

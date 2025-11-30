@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>User Management</title>
+        <link rel="stylesheet" href="dashboard.css">
+        <link rel="stylesheet" href="users.css">
+    </head>
+    <body>
+        <div class="sidebar">
+            <div class="logo">selfsync</div>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="users.html" style="font-weight:bold;">User Management</a></li>
+                <li><a href="categories.html">Categories</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="inventory.html">Inventory</a></li>
+                <li><a href="orders.html">Orders</a></li>
+                <li><a href="sales.html">Sales</a></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <span>User Management</span>
+                <button class="logout-btn" onclick="window.location.href = 'index.html'">Logout</button>
+            </div>
+
+            <div class="info-cards">
+                <div class="card users">
+                    <div class="icon">&#128100;</div>
+                    <div class="text">
+                        <div class="number" id="users-count">0</div>
+                        <div>Users</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget">
+                <h3>Users List</h3>
+                <div id="msg"></div>
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Username</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-list-table"></tbody>
+                </table>
+                <h4>Add New User</h4>
+                <form class="add-user-form" id="addUserForm" autocomplete="off" onsubmit="return false;">
+                    <input type="text" id="newUsername" placeholder="Username" required>
+                    <input type="password" id="newPassword" placeholder="Password" required>
+                    <button class="add-user-btn" id="addUserBtn">Add User</button>
+                </form>
+            </div>
+        </div>
+        <script>
+            async function loadUsers() {
+                const res = await fetch("users.jsp");
+                users = await res.json();
+                renderUsers();
+            }
+
+            function renderUsers() {
+                document.getElementById('users-count').textContent = users.length;
+                let tbl = '';
+                users.forEach((u, i) => {
+                    tbl += `<tr>
+            <td>${i + 1}</td>
+            <td>${u.username}</td>
+            <td><button class="delete-btn" onclick="deleteUser(${u.id})">Delete</button></td>
+          </tr>`;
+                });
+                document.getElementById('user-list-table').innerHTML = tbl || '<tr><td colspan="3">No users found.</td></tr>';
+            }
+
+            async function deleteUser(id) {
+                await fetch(`users.jsp?action=delete&id=${id}`);
+                loadUsers();
+                showMsg("User deleted!", true);
+            }
+
+            document.getElementById("addUserBtn").onclick = async () => {
+                let name = newUsername.value.trim();
+                let pass = newPassword.value;
+
+                if (!name || !pass) {
+                    showMsg("All fields required.", false);
+                    return;
+                }
+
+                await fetch(`users.jsp?action=add&username=${name}&password=${pass}`);
+                addUserForm.reset();
+                loadUsers();
+                showMsg("User added successfully!", true);
+            };
+
+            function showMsg(txt, ok) {
+                const msg = document.getElementById("msg");
+                msg.textContent = txt;
+                msg.className = ok ? "success-message" : "error-message";
+                setTimeout(() => {
+                    msg.textContent = "";
+                    msg.className = "";
+                }, 2000);
+            }
+
+            let users = [];
+            loadUsers();
+        </script>
+
+    </body>
+</html>

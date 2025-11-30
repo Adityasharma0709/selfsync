@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Inventory</title>
+        <link rel="stylesheet" href="dashboard.css">
+        <link rel="stylesheet" href="products.css">
+        <style>
+            .success-message {
+                color: green;
+                margin: 10px 0;
+            }
+            .error-message {
+                color: red;
+                margin: 10px 0;
+            }
+            .filters-row {
+                display:flex;
+                gap:10px;
+                margin-bottom:10px;
+            }
+            .filters-row input, .filters-row select {
+                padding:6px;
+            }
+            .products-table {
+                width:100%;
+                border-collapse:collapse;
+            }
+            .products-table th, .products-table td {
+                border:1px solid #ddd;
+                padding:8px;
+            }
+            .add-product-form {
+                margin-top:12px;
+                display:flex;
+                gap:10px;
+                align-items:center;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class="sidebar">
+            <div class="logo">ShelfSync</div>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="users.html">Users</a></li>
+                <li><a href="categories.html">Categories</a></li>
+                <li><a href="products.html">Products</a></li>
+                <li><a href="inventory.html" style="font-weight:bold;">Inventory</a></li>
+                <li><a href="orders.html">Orders</a></li>
+                <li><a href="sales.html">Sales</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <span>Inventory</span>
+                <button class="logout-btn" onclick="location.href = 'index.html'">Logout</button>
+            </div>
+
+            <div class="widget">
+                <h3>Inventory Stock</h3>
+
+                <div class="filters-row">
+                    <input type="text" id="searchBox" placeholder="Search product...">
+                    <select id="categoryFilter"><option value="">All Categories</option></select>
+                </div>
+
+                <div id="msg"></div>
+
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>#</th><th>Product</th><th>Category</th><th>Quantity</th><th>Unit</th><th>Status</th><th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table"></tbody>
+                </table>
+
+                <h4>Update Stock</h4>
+                <form id="stockForm" onsubmit="return false;" class="add-product-form">
+                    <select id="productSelect" required>
+                        <option value="">Select Product</option>
+                    </select>
+                    <input type="number" id="qtyChange" placeholder="Quantity (use negative to reduce)" required>
+                    <button id="updateStockBtn">Update Stock</button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            let categories = [];
+            let inventory = [];
+            let searchTerm = "";
+            let selectedCategory = "";
+
+            async function loadData() {
+                const res = await fetch('inventory.jsp');
+                const txt = await res.text();
+                const data = JSON.parse(txt);
+                categories = data.categories || [];
+                inventory = data.inventory || [];
+                renderCategoryFilter();
+                renderProductSelect();
+                renderInventory();
+            }
+
+            function renderCategoryFilter() {
+                let html = `<option value="">All Categories</option>`;
+                html += categories.map(c => `<option value="${c}">${c}</option>`).join('');
+                document.getElementById('categoryFilter').innerHTML = html;
+            }
+
+            function renderProductSelect() {
+                let html = `<option value="">Select Product</option>`;
+                html += inventory.map(i => `<option value="${i.id}">${i.name} (${i.category}) — qty:${i.quantity}</option>`).join('');
+                document.getElementById('productSelect').innerHTML = html;
+            }
+
+            document.getElementById('searchBox').oninput = function () {
+                searchTerm = this.value.toLowerCase();
+                renderInventory();
+            };
+            document.getElementById('categoryFilter').onchange = function () {
+                selectedCategory = this.value;
+                renderInventory();
+            };
+
+            function renderInventory() {
+                const filtered = inventory.filter(it =>
+                    it.name.toLowerCase().includes(searchTerm) &&
+                            (!selectedCategory || it.category === selectedCategory)
+                );
+
+                const rows = filtered.map((it, idx) => `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${it.name}</td>
+                    <td>${it.category}</td>
+                    <td>${it.quantity}</td>
+                    <td>${it.unit || ''}</td>
+                    <td>${it.quantity < 5 ? "<span style='color:red;font-weight:bold'>Low Stock</span>" : "OK"}</td>
+                    <td><button onclick="clearStock(${it.id})">Clear</button></td>
+                </tr>
+            `).join('');
+
+                document.getElementById('inventory-table').innerHTML = rows || `<tr><td colspan="7">No items found</td></tr>`;
+            }
+
+            async function clearStock(id) {
+                const res = await fetch(`inventory.jsp?action=delete&id=${id}`);
+                const txt = await res.text();
+                try {
+                    const r = JSON.parse(txt);
+                    if (r.message === 'cleared')
+                        showMsg('Stock cleared!', true);
+                    else
+                        showMsg('Unable to clear stock', false);
+                } catch (e) {
+                    showMsg('Server error', false);
+                }
+                await loadData();
+            }
+
+            document.getElementById('updateStockBtn').onclick = async () => {
+                const productId = document.getElementById('productSelect').value;
+                const qtyStr = document.getElementById('qtyChange').value;
+
+                if (!productId) {
+                    showMsg('Select a product', false);
+                    return;
+                }
+                if (qtyStr === '') {
+                    showMsg('Enter quantity', false);
+                    return;
+                }
+
+                // Basic client-side sanity: qty must be integer
+                const qty = parseInt(qtyStr, 10);
+                if (Number.isNaN(qty)) {
+                    showMsg('Quantity must be an integer', false);
+                    return;
+                }
+
+                // Optionally check current quantity to warn user (not required — server enforces non-negative)
+                const current = inventory.find(i => i.id == productId)?.quantity ?? 0;
+                if (qty < 0 && Math.abs(qty) > current) {
+                    // user intends to reduce more than available — we'll still allow but inform user it'll floor to 0
+                    if (!confirm('You are reducing more than current stock. Quantity will be floored to 0. Continue?'))
+                        return;
+                }
+
+                const res = await fetch(`inventory.jsp?action=update&productId=${productId}&qty=${qty}`);
+                const txt = await res.text();
+                try {
+                    const r = JSON.parse(txt);
+                    if (r.message === 'updated') {
+                        showMsg(`Updated — new quantity: ${r.newQuantity}`, true);
+                    } else if (r.message === 'product_not_found') {
+                        showMsg('Product not found', false);
+                    } else if (r.message === 'invalid_input') {
+                        showMsg('Invalid input', false);
+                    } else {
+                        showMsg('Update failed', false);
+                    }
+                } catch (e) {
+                    showMsg('Server error', false);
+                }
+
+                document.getElementById('stockForm').reset?.();
+                await loadData();
+            };
+
+            function showMsg(text, ok) {
+                const el = document.getElementById('msg');
+                el.textContent = text;
+                el.className = ok ? 'success-message' : 'error-message';
+                setTimeout(() => {
+                    el.textContent = '';
+                    el.className = '';
+                }, 3000);
+            }
+
+            loadData();
+        </script>
+    </body>
+</html>

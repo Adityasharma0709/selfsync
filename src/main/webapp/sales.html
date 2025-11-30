@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sales</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="sales.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">selfSync</div>
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="user-management.html">User Management</a></li>
+      <li><a href="categories.html">Categories</a></li>
+      <li><a href="products.html">Products</a></li>
+      <li><a href="inventory.html">Inventory</a></li>
+      <li><a href="orders.html">Orders</a></li>
+      <li><a href="sales.html" style="font-weight:bold;">Sales</a></li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <span>Sales</span>
+      <button class="logout-btn" onclick="window.location.href='index.html'">Logout</button>
+    </div>
+
+    <div class="info-cards">
+      <div class="card sales-sum">
+        <div class="text">
+          <div class="number" id="sales-count">0</div>
+          <div>Total Sales</div>
+        </div>
+      </div>
+
+      <div class="card total-revenue">
+        <div class="icon">&#128181;</div>
+        <div class="text">
+          <div class="number" id="total-revenue">₹0</div>
+          <div>Total Revenue</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <h3>Sales List</h3>
+
+      <input type="text" id="searchProduct" placeholder="Search by product...">
+
+      <table class="sales-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Qty</th>
+            <th>Total Sale (₹)</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="sales-list-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+let sales = [];
+let searchProduct = '';
+
+document.getElementById('searchProduct').oninput = function () {
+  searchProduct = this.value.trim().toLowerCase();
+  renderSales();
+};
+
+async function loadSales() {
+  const res = await fetch("sales.jsp");
+  const data = await res.json();
+  sales = data;
+  renderSales();
+}
+
+function renderSales() {
+  let filtered = sales.filter(s =>
+    s.product.toLowerCase().includes(searchProduct)
+  );
+
+  document.getElementById('sales-count').textContent = filtered.length;
+
+  let revenue = filtered.reduce((sum, s) => sum + s.total_sale, 0);
+  document.getElementById('total-revenue').textContent = "₹" + revenue;
+
+  let rows = "";
+  filtered.forEach(s => {
+    rows += `
+      <tr>
+        <td>${s.id}</td>
+        <td>${s.product}</td>
+        <td>${s.category}</td>
+        <td>${s.qty}</td>
+        <td>${s.total_sale}</td>
+        <td>${s.date}</td>
+      </tr>`;
+  });
+
+  document.getElementById('sales-list-table').innerHTML =
+    rows || "<tr><td colspan='6'>No sales found.</td></tr>";
+}
+
+loadSales();
+</script>
+
+</body>
+</html>

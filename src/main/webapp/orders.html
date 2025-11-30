@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Orders</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="orders.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo">selfSync</div>
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="user-management.html">User Management</a></li>
+      <li><a href="categories.html">Categories</a></li>
+      <li><a href="products.html">Products</a></li>
+      <li><a href="inventory.html">Inventory</a></li>
+      <li><a href="orders.html" style="font-weight:bold;">Orders</a></li>
+      <li><a href="sales.html">Sales</a></li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <span>Orders</span>
+      <button class="logout-btn" onclick="window.location.href='index.html'">Logout</button>
+    </div>
+
+    <div class="widget">
+      <h3>Orders List</h3>
+      <input type="text" id="searchProduct" placeholder="Search by product...">
+
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Qty</th>
+            <th>Price (₹)</th>
+            <th>Total Sale (₹)</th>
+            <th>Date</th>
+            <th>Delivered</th>
+          </tr>
+        </thead>
+        <tbody id="orders-list-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+let orders = [];
+let searchProduct = '';
+
+document.getElementById('searchProduct').oninput = function () {
+  searchProduct = this.value.trim().toLowerCase();
+  renderOrders();
+};
+
+async function loadOrders() {
+  try {
+    const res = await fetch("orders.jsp");
+    const data = await res.json();
+    orders = data;
+    renderOrders();
+  } catch (err) {
+    console.error("Failed to load orders:", err);
+  }
+}
+
+function renderOrders() {
+  let filtered = orders.filter(o =>
+    o.product.toLowerCase().includes(searchProduct)
+  );
+
+  let rows = "";
+  filtered.forEach(o => {
+    rows += `
+      <tr>
+        <td>${o.id}</td>
+        <td>${o.product}</td>
+        <td>${o.category}</td>
+        <td>${o.qty}</td>
+        <td>${o.price}</td>
+        <td>${o.total_sale}</td>
+        <td>${o.date}</td>
+        <td>${o.delivered || '-'}</td>
+      </tr>`;
+  });
+
+  document.getElementById('orders-list-table').innerHTML =
+    rows || "<tr><td colspan='8'>No orders found.</td></tr>";
+}
+
+// Load orders initially
+loadOrders();
+</script>
+</body>
+</html>
